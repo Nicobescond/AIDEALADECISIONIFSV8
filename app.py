@@ -548,14 +548,22 @@ def afficher_resultats(resultats, eligibilite, reponses):
 
 # Barre de progression
 categories_list = list(QUESTIONS.keys())
-progress = (st.session_state.etape - 1) / len(categories_list)
+total_etapes = len(categories_list) + 1  # +1 pour la page de résultats
+
+# Vérifier que l'étape est valide
+if st.session_state.etape > total_etapes:
+    st.session_state.etape = total_etapes
+if st.session_state.etape < 1:
+    st.session_state.etape = 1
+
+progress = (st.session_state.etape - 1) / (total_etapes - 1) if total_etapes > 1 else 0
 st.progress(progress)
-st.caption(f"Étape {st.session_state.etape}/{len(categories_list)}")
+st.caption(f"Étape {st.session_state.etape}/{total_etapes}")
 
 # Navigation
-categorie_actuelle = categories_list[st.session_state.etape - 1]
-
-if categorie_actuelle != "resultats":
+if st.session_state.etape <= len(categories_list):
+    # Pages de questionnaire
+    categorie_actuelle = categories_list[st.session_state.etape - 1]
     cat_data = QUESTIONS[categorie_actuelle]
     
     st.markdown(f"## {cat_data['titre']}")
@@ -599,7 +607,7 @@ else:
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("⬅️ Retour au questionnaire"):
-            st.session_state.etape = 1
+            st.session_state.etape = len(categories_list)
             st.rerun()
     
     with col2:
